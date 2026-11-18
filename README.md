@@ -37,6 +37,10 @@ Mathlib:
   again on main after a merge, since the merge queue has already built
   exactly that commit.
 - **A review check** for axioms, and for library quality, in AGENTS.md.
+- **`ERRATA.md`**, where agents record each error they find in the plan or
+  its sources, and how the library corrects it or works around it. AGENTS.md
+  asks them to fix such errors as part of their work, and to look for
+  another route when an error cannot be fixed.
 - **The Apache 2.0 licence**, as Tau Ceti and Mathlib have, so that code can
   move to either.
 

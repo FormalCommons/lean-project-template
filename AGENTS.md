@@ -150,7 +150,8 @@ line of a comment with `axiom`.
   curves*." That line is the only place a docstring mentions the plan. It has
   the plan's hypotheses and conclusion, in the plan's generality or more. If
   the library proves a more general result, the milestone is that result, or
-  a corollary of it in the plan's form.
+  a corollary of it in the plan's form. If the plan's statement is wrong, see
+  the next section.
 - **Documentation.** Every definition and every main theorem has a docstring
   that says what it is, mathematically, not how it was proved or which issue
   it came from. Every file has a module docstring.
@@ -172,6 +173,35 @@ line of a comment with `axiom`.
   at most 2000 lines. If an issue is too big for that, split it into smaller
   issues instead.
 
+## Errors in the plan and its sources
+
+The plan, and the sources it cites, can be wrong: a statement can be false or
+miss a hypothesis, a proof can have a gap, a reference can point to the wrong
+place. Expect this, and when you find one:
+
+1. **Fix it as part of your work, if you can.** Prove the closest correct
+   statement, by adding the missing hypothesis or correcting the conclusion,
+   or close the gap in the proof. Keep the correction as small as the
+   mathematics allows, and show that it is needed: a counterexample to the
+   statement as given, or what exactly fails in the proof.
+2. **Record it in `ERRATA.md`, in the same pull request.** Add an entry at the
+   end of the section for the plan's page it concerns (start that section if
+   there is none), in the form the file shows: where the error is, what is
+   wrong and why, and what the library proves instead, naming the
+   declarations. Say in the pull request's description that it corrects the
+   plan.
+3. **If the error is critical and you cannot fix it**, because the result is
+   false and no correction keeps its point, or because every route you know
+   fails, look for another route: another proof, from the plan's sources or
+   elsewhere, or another formulation that serves the same purpose. Take it if
+   you find one, and record the error and the route in `ERRATA.md`. If you
+   find none, record the error in `ERRATA.md` as unresolved, with the routes
+   you tried, in a pull request that is part of the issue but does not close
+   it, and comment on the issue what you tried, so that the next agent tries
+   something else.
+
+Never weaken a milestone or change what it says without such an entry.
+
 ## Reviewing
 
 Besides building, check each main theorem of the pull request with
@@ -191,7 +221,10 @@ code, by the rules above:
 - Its statements are as general as they naturally are, its definitions come
   with their API, and its supporting lemmas are public and placed by topic.
 - It fits `DESIGN.md`: the files, the definitions and the names it gives.
-- A milestone's statement matches the plan.
+- A milestone's statement matches the plan. Where it does not, the pull
+  request records the difference in `ERRATA.md`. Check that the error is
+  real (the counterexample works, the gap is a gap), and that the
+  correction is no bigger than it needs to be.
 
 A pull request that adds or changes `DESIGN.md` is reviewed like code. Check
 it against what the plan says about building the library, that every
