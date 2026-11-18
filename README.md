@@ -12,7 +12,8 @@ Mathlib:
 
 - **Built on Tau Ceti.** `lakefile.toml` requires Tau Ceti at a fixed commit,
   and Mathlib comes through it. The Lean version and the options (Mathlib's
-  linters, warnings as errors, at most 1500 lines per file) are Tau Ceti's.
+  linters, warnings as errors, at most 1500 lines per file) are Tau Ceti's,
+  with `autoImplicit = false` besides.
 - **A library, not a list of proofs.** [AGENTS.md](AGENTS.md) asks for
   definitions with their API, results in their natural generality, public
   supporting lemmas placed by topic, a `DESIGN.md` that every pull request
@@ -24,15 +25,17 @@ Mathlib:
 - **Lean's module system**, explained in AGENTS.md, so that every file is a
   module from the start.
 - **Tau Ceti's rules for source text, checked in CI:** the copyright header,
-  `module` first, no `set_option`, no metaprogramming, no imports of whole
-  libraries. The check reads the files and runs nothing from them.
-- **CI that restores built dependencies.** The `cache` workflow builds the
-  dependencies on every push to main: Mathlib's files from its cache, and the
-  Tau Ceti modules that the library imports, which have no cache. It saves
-  them whenever the library has started to import new modules. CI on pull
-  requests and in the merge queue restores the latest save instead of
-  building them again. CI does not run again on main after a merge, since the
-  merge queue has already built exactly that commit.
+  `module` first, no `set_option`, no metaprogramming, no `native_decide`, no
+  axioms, no imports of whole libraries. The check reads the files and runs
+  nothing from them.
+- **CI that restores built dependencies.** On every push to main, the
+  `cache` workflow reads which Tau Ceti modules the library imports. When
+  that list has changed, it builds those modules (with Mathlib's files from
+  Mathlib's cache) and saves them; it never builds the library's own code.
+  CI on pull requests and in the merge queue restores the latest save
+  instead of building the dependencies again. The `ci` workflow does not run
+  again on main after a merge, since the merge queue has already built
+  exactly that commit.
 - **A review check** for axioms, and for library quality, in AGENTS.md.
 - **The Apache 2.0 licence**, as Tau Ceti and Mathlib have, so that code can
   move to either.
@@ -56,7 +59,11 @@ Mathlib:
    that AGENTS.md refers to.
 5. Set the repository up as fc-worker's README says: the Apps' access, the
    labels, the ruleset with the merge queue, auto-merge, and a read-only
-   `GITHUB_TOKEN` for Actions.
+   `GITHUB_TOKEN` for Actions. To keep agents from changing the setup, add a
+   `.github/CODEOWNERS` that gives `lakefile.toml`, `lake-manifest.json`,
+   `lean-toolchain`, `LICENSE` and `.github/` to a maintainer, and require
+   code-owner review in the ruleset: fc-worker then parks such a pull
+   request for that maintainer.
 6. Check that the cache workflow ran on the final `lake-manifest.json`, or
    run it with `gh workflow run cache`, before the first pull request.
 

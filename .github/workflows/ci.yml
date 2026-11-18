@@ -23,26 +23,25 @@ jobs:
           fail=0
           mapfile -t files < <(git ls-files '*.lean')
           [ ${#files[@]} -gt 0 ] || exit 0
-          if grep -nE '\bset_option\b|\bunsafe\b|#eval\b|\bnative_decide\b|\b(initialize|builtin_initialize|run_cmd|run_elab|run_tac|run_meta|by_elab)\b|\bmeta\s+import\b|^\s*((public|private|protected|noncomputable)\s+)*(meta|elab|elab_rules)\b|^\s*((private|protected)\s+)?axiom\s+\S+\s*[:({[]|^\s*(macro|macro_rules)\b' "${files[@]}"; then
-            echo "::error::The lines above use a command that AGENTS.md rules out (the check reads comments too)."
-            fail=1
-          fi
-          if grep -nE '^\s*(public\s+)?import\s+((Mathlib|TauCeti)\s*$|(Lean|Lake)(\.|\s|$))' "${files[@]}"; then
-            echo "::error::The lines above import a whole library, or Lean or Lake. Import the specific modules."
-            fail=1
-          fi
+          report() { echo "::error::$1"; fail=1; }
+          grep -HnE '\b(set_option|unsafe|native_decide|initialize|builtin_initialize|run_cmd|run_elab|run_tac|run_meta|by_elab|count_heartbeats|guard_min_heartbeats|ofReduceBool|ofReduceNat|meta|elab|elab_rules)\b|#eval|\+native\b|\bnative\s*:=\s*true|(@|\battribute\s*)\[[^]]*\b(tactic|term_elab|command_elab|macro|delab|app_unexpander|init)\b' "${files[@]}" \
+            && report "The lines above use a command or word that AGENTS.md rules out. The check reads comments too."
+          grep -HnE '^\s*(@\[[^]]*\]\s*)?((public|private|protected)\s+)?axiom\s+\S+(\s*[:({[]|\s*$)' "${files[@]}" \
+            && report "The lines above declare an axiom."
+          grep -HnE '\bmacro(_rules)?\b' "${files[@]}" | grep -vE '\blocal\s+macro(_rules)?\b' \
+            && report "The lines above define a macro that is not local."
+          grep -HnE '^\s*(public\s+)?import\s+((Mathlib|TauCeti|Mathlib\.Tactic)\s*($|--)|(Lean|Lake|Mathlib\.Lean)(\.|\s|$))' "${files[@]}" \
+            && report "The lines above import a whole library, or Lean or Lake. Import the specific modules."
           for f in "${files[@]}"; do
-            if ! awk '
+            awk '
               NR == 1 && $0 != "/-" { exit 1 }
               NR == 2 && $0 !~ /^Copyright \(c\) [0-9][0-9][0-9][0-9] .+\. All rights reserved\.$/ { exit 1 }
               NR == 3 && $0 != "Released under Apache 2.0 license as described in the file LICENSE." { exit 1 }
               NR == 4 && $0 !~ /^Authors: ./ { exit 1 }
               NR == 5 && $0 != "-/" { exit 1 }
               NR > 5 && NF { exit ($0 == "module" ? 0 : 1) }
-              END { if (NR <= 5) exit 1 }' "$f"; then
-              echo "::error file=$f::It must start with the copyright header in AGENTS.md, then module."
-              fail=1
-            fi
+              END { if (NR <= 5) exit 1 }' "$f" \
+              || report "$f must start with the copyright header in AGENTS.md, then module."
           done
           exit $fail
       - name: install elan

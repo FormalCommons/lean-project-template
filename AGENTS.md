@@ -8,7 +8,8 @@ how the library should be built. Read the plan's pages for the work you do.
 The milestones are results that the library must prove, and they measure how
 much of the subject it covers. But the library is more than its milestones: it
 is meant to be used, by later work here, by other projects, and eventually as
-part of Tau Ceti or Mathlib. Write it so that it can move there unchanged.
+part of Tau Ceti or Mathlib. Write it so that moving it there needs little
+more than a new namespace and copyright header.
 
 `DESIGN.md`, once it exists, describes how the library is organized: its
 folders and files, its core definitions and their API, and which parts build
@@ -37,9 +38,10 @@ minutes.
 - Name files and declarations after the mathematics, never after a milestone,
   an issue or a pull request. Follow Mathlib's naming conventions; a name
   never claims more than the statement (`_iff` only for an iff).
-- A lemma whose first explicit argument has a type from Mathlib or Tau Ceti
-  goes in that type's namespace, such as `Matrix.trace_foo`, so that it can
-  move upstream without a rename. Everything else is in `Project`.
+- A declaration about an existing Lean, Mathlib or Tau Ceti notion, one
+  that dot notation on that type would find, goes in that type's namespace,
+  such as `Matrix.trace_foo`, so that it can move upstream without a rename.
+  Declarations about this library's own definitions go in `Project`.
 - No file imports the whole library. `lake build` builds every file under
   `Project/` by itself (the `globs` in `lakefile.toml`), so a new file needs
   no import anywhere else. Do not add a file that imports the others.
@@ -82,12 +84,15 @@ end Project
 end
 ```
 
-- The header is exactly as above; CI checks it.
+- The header is exactly as above; CI checks it. The module docstring comes
+  right after the imports. Mathlib's style linters are on and fail the build,
+  among them the limit of 100 characters per line.
 - A module can import only modules, so every file starts with `module`.
   Import with `public import`, so that files that import yours see the
   declarations your statements use. Import the specific modules you need,
-  never all of `Mathlib` or `TauCeti`, and never `Lean` or `Lake` modules
-  (`Mathlib.Tactic.*` is fine).
+  never all of `Mathlib` or `TauCeti`, and never `Lean`, `Lake` or
+  `Mathlib.Lean` modules. Specific `Mathlib.Tactic.*` modules are fine, but
+  not `Mathlib.Tactic` itself.
 - Only declarations in a `public section`, or marked `public`, are visible
   to other files. Other files see a definition's type, but not its body. Give
   a definition `foo` a lemma `foo_def` that states its body, proved by
@@ -98,15 +103,22 @@ end
 
 ## Rules for the source
 
-CI rejects these, by reading the text of every file, comments included, so
-keep these words out of comments too:
-
-- **No gaps.** No `sorry`, `admit`, new `axiom`, or `native_decide`. A
-  theorem may depend only on `propext`, `Classical.choice` and `Quot.sound`.
-- **No `set_option`**, in any form, including `set_option maxHeartbeats … in`.
-  Every declaration must check within Lean's default limits.
+- **No gaps.** No `sorry`, `admit`, new `axiom`, `native_decide` or
+  `decide +native`. A theorem may depend only on `propext`,
+  `Classical.choice` and `Quot.sound`. A `sorry` fails the build; reviewers
+  check the axioms with `#print axioms`.
+- **No `set_option`**, in any form, including `set_option maxHeartbeats … in`,
+  and no `count_heartbeats`. Every declaration must check within Lean's
+  default limits.
 - **No metaprogramming**: no `meta`, `unsafe`, `elab`, `initialize`,
-  `run_cmd`, `#eval`, and no `macro` or `macro_rules` that is not `local`.
+  `run_cmd`, `#eval`, attributes such as `@[tactic]` or `@[init]`, and no
+  `macro` or `macro_rules` that is not `local` (`scoped` ones are ruled out
+  too).
+
+CI rejects these by reading the text of every file, comments included. So
+keep the words `set_option`, `unsafe`, `native_decide`, `initialize`, `meta`,
+`elab`, `macro` and `#eval` out of comments and names too, and do not start a
+line of a comment with `axiom`.
 
 ## Writing a library
 
@@ -133,8 +145,9 @@ keep these words out of comments too:
   not in the file of the theorem that first needed it. Keep `private` for
   steps of one proof.
 - **Milestones are theorems of the library.** A theorem that proves a
-  milestone sits where its subject belongs, and its docstring names the
-  milestone, for example "This is the milestone *Bézout's theorem*". It has
+  milestone sits where its subject belongs. Its docstring ends with a line
+  that names the milestone, such as "Milestone: *Bézout's theorem for plane
+  curves*." That line is the only place a docstring mentions the plan. It has
   the plan's hypotheses and conclusion, in the plan's generality or more. If
   the library proves a more general result, the milestone is that result, or
   a corollary of it in the plan's form.
