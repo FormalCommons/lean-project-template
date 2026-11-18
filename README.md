@@ -34,9 +34,13 @@ showed a project needs from the start:
 4. Set the repository up as fc-worker's README says: the Apps' access, the
    labels, the ruleset with the merge queue, auto-merge, and a read-only
    `GITHUB_TOKEN` for Actions.
-5. Run the cache workflow once: `gh workflow run cache`. It runs again by
-   itself whenever `lake-manifest.json` or `lean-toolchain` changes on main.
-   Do this before turning on the ruleset, which stops pushes to main.
+5. Check that the cache workflow ran on the final `lake-manifest.json`, or
+   run it with `gh workflow run cache`, before the first pull request. It
+   runs by itself whenever `lake-manifest.json` or `lean-toolchain` changes
+   on main.
+
+Steps 2 and 3 push to main, so do them before step 4 turns on the ruleset,
+which stops pushes to main.
 
 ## Building
 
