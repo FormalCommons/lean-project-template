@@ -16,19 +16,51 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7
+      # Tau Ceti's rules for source text (see AGENTS.md), so that the library
+      # can move there. This reads the files and runs nothing from them.
+      - name: check the source
+        run: |
+          fail=0
+          mapfile -t files < <(git ls-files '*.lean')
+          [ ${#files[@]} -gt 0 ] || exit 0
+          if grep -nE '\bset_option\b|\bunsafe\b|#eval\b|\bnative_decide\b|\b(initialize|builtin_initialize|run_cmd|run_elab|run_tac|run_meta|by_elab)\b|\bmeta\s+import\b|^\s*((public|private|protected|noncomputable)\s+)*(meta|elab|elab_rules)\b|^\s*((private|protected)\s+)?axiom\s+\S+\s*[:({[]|^\s*(macro|macro_rules)\b' "${files[@]}"; then
+            echo "::error::The lines above use a command that AGENTS.md rules out (the check reads comments too)."
+            fail=1
+          fi
+          if grep -nE '^\s*(public\s+)?import\s+((Mathlib|TauCeti)\s*$|(Lean|Lake)(\.|\s|$))' "${files[@]}"; then
+            echo "::error::The lines above import a whole library, or Lean or Lake. Import the specific modules."
+            fail=1
+          fi
+          for f in "${files[@]}"; do
+            if ! awk '
+              NR == 1 && $0 != "/-" { exit 1 }
+              NR == 2 && $0 !~ /^Copyright \(c\) [0-9][0-9][0-9][0-9] .+\. All rights reserved\.$/ { exit 1 }
+              NR == 3 && $0 != "Released under Apache 2.0 license as described in the file LICENSE." { exit 1 }
+              NR == 4 && $0 !~ /^Authors: ./ { exit 1 }
+              NR == 5 && $0 != "-/" { exit 1 }
+              NR > 5 && NF { exit ($0 == "module" ? 0 : 1) }
+              END { if (NR <= 5) exit 1 }' "$f"; then
+              echo "::error file=$f::It must start with the copyright header in AGENTS.md, then module."
+              fail=1
+            fi
+          done
+          exit $fail
       - name: install elan
         run: |
           curl -sSfL https://raw.githubusercontent.com/leanprover/elan/v4.2.4/elan-init.sh \
             | sh -s -- -y --no-modify-path --default-toolchain none
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      # The latest save for this lean-toolchain and lake-manifest.json; see
+      # the cache workflow.
       - name: restore the built dependencies
         id: restore
         uses: actions/cache/restore@v6
         with:
           path: .lake/packages
           key: lake-packages-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}
+          restore-keys: lake-packages-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}-
       - name: fetch Mathlib's build cache
-        if: steps.restore.outputs.cache-hit != 'true'
+        if: steps.restore.outputs.cache-matched-key == ''
         run: lake exe cache get
       # --wfail fails the build on any warning, including a `sorry`.
       - name: build
