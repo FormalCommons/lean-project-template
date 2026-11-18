@@ -60,7 +60,8 @@ Mathlib:
    it in a pull request of its own: Tau Ceti keeps no deprecated names, so a
    newer commit may break the build.
 4. Replace this README with one for the project, which links to the plan
-   that AGENTS.md refers to.
+   that AGENTS.md refers to, and give `ERRATA.md` a section for each page of
+   the plan, in its order.
 5. Set the repository up as fc-worker's README says: the Apps' access, the
    labels, the ruleset with the merge queue, auto-merge, and a read-only
    `GITHUB_TOKEN` for Actions. To keep agents from changing the setup, add a
