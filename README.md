@@ -26,14 +26,21 @@ showed a project needs from the start:
 2. Rename `Project` to the library's name in `lakefile.toml`,
    `lake-manifest.json` (`"name"`), `AGENTS.md`, the folder `Project/` and
    the namespace. Add the libraries the plan builds on to `lakefile.toml`,
-   and update the versions with `lake update`. Replace `Project/Basic.lean`.
+   and update the versions with `lake update`. Replace `Project/Basic.lean`,
+   but keep a file in the folder, such as a `README.md`: `lake build` fails
+   when the folder the `globs` name does not exist.
 3. Replace this README with one for the project, which links to the plan
    that AGENTS.md refers to.
 4. Set the repository up as fc-worker's README says: the Apps' access, the
    labels, the ruleset with the merge queue, auto-merge, and a read-only
    `GITHUB_TOKEN` for Actions.
-5. Run the cache workflow once: `gh workflow run cache`. It runs again by
-   itself whenever `lake-manifest.json` or `lean-toolchain` changes on main.
+5. Check that the cache workflow ran on the final `lake-manifest.json`, or
+   run it with `gh workflow run cache`, before the first pull request. It
+   runs by itself whenever `lake-manifest.json` or `lean-toolchain` changes
+   on main.
+
+Steps 2 and 3 push to main, so do them before step 4 turns on the ruleset,
+which stops pushes to main.
 
 ## Building
 
