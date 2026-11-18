@@ -150,7 +150,8 @@ line of a comment with `axiom`.
   curves*." That line is the only place a docstring mentions the plan. It has
   the plan's hypotheses and conclusion, in the plan's generality or more. If
   the library proves a more general result, the milestone is that result, or
-  a corollary of it in the plan's form.
+  a corollary of it in the plan's form. If the plan's statement is wrong, see
+  the next section.
 - **Documentation.** Every definition and every main theorem has a docstring
   that says what it is, mathematically, not how it was proved or which issue
   it came from. Every file has a module docstring.
@@ -172,6 +173,42 @@ line of a comment with `axiom`.
   at most 2000 lines. If an issue is too big for that, split it into smaller
   issues instead.
 
+## Errors in the plan and its sources
+
+The plan, and the sources it cites, can be wrong: a statement can be false or
+miss a hypothesis, a proof can have a gap, a reference can point to the wrong
+place. Expect this. An error is something you can show: a counterexample, or
+a step that is false or does not follow. A proof you did not find is not an
+error. An error that the plan already notes needs no entry; follow its
+correction. An error outside your issue gets an issue of its own, labelled
+`proposed`. When you find an error in your issue:
+
+1. **Fix it as part of your work, if you can.** Prove the closest correct
+   statement, or close the gap in the proof. For each hypothesis you add, or
+   change you make to the conclusion, give a counterexample without it: in
+   Lean, next to the corrected theorem, if you can.
+2. **Record it in `ERRATA.md`, in the same pull request**, in the form the
+   file shows, quoting what the plan or the source says. If the file lists
+   the error as unresolved, replace its **Unresolved** line with the fix.
+3. **If you cannot fix it**, because the statement is false and no
+   correction gives the results that build on it what they need, or because
+   the plan's proof fails and you know no other, look for another route:
+   another proof, or another statement that gives them what they need. The
+   plan says which results build on a milestone. If you find a route, take
+   it, and record the error and the route as in step 2.
+4. **If you find no route**, do not open a pull request that closes the
+   issue. Comment on the issue with the error, its evidence, and each route
+   you tried and where it failed, so that the next agent tries another. If
+   neither `ERRATA.md` nor an open pull request has an entry for the error
+   yet, also open a pull request that only adds one, marked **Unresolved**,
+   on the branch `fc/issue-<number>-errata`. Unlike other pull requests, end
+   its description with `Part of #<number>`, and never write `Closes`,
+   `Fixes` or `Resolves` in it or in a commit message, since those close the
+   issue when the pull request merges.
+
+Never weaken a milestone, change what it says, or propose closing its issue
+because the plan is wrong, without an entry in `ERRATA.md`.
+
 ## Reviewing
 
 Besides building, check each main theorem of the pull request with
@@ -191,7 +228,13 @@ code, by the rules above:
 - Its statements are as general as they naturally are, its definitions come
   with their API, and its supporting lemmas are public and placed by topic.
 - It fits `DESIGN.md`: the files, the definitions and the names it gives.
-- A milestone's statement matches the plan.
+- A milestone's statement matches the plan, or is more general. If it is
+  weaker or different, the pull request adds an entry to `ERRATA.md`. Check
+  that the error is real, and that each change to the statement has a
+  counterexample that shows it is needed.
+- A pull request that only adds an unresolved entry to `ERRATA.md`, and is
+  `Part of` its issue, need not do the issue. Check the entry's evidence and
+  the routes it lists, and that the file has no entry for that error yet.
 
 A pull request that adds or changes `DESIGN.md` is reviewed like code. Check
 it against what the plan says about building the library, that every
@@ -200,5 +243,6 @@ issue, and that the order of the parts can be built from what exists.
 
 ## Triage
 
-An issue for a part of the library must agree with `DESIGN.md` and the plan.
+An issue for a part of the library must agree with `DESIGN.md` and the plan,
+as `ERRATA.md` corrects it.
 If it does not, say where, and correct the issue or close it.
