@@ -79,6 +79,9 @@ end
   `lake-manifest.json`, `lean-toolchain` or anything under `.github/`,
   unless the issue you work on asks for it and a person in the project
   opened it.
+- **Proofs check quickly.** A declaration that takes more than a few seconds
+  to check slows every build that follows. Prefer an argument to a search,
+  and split a large `decide` into small cases.
 - **Keep pull requests focused.** One pull request does one issue. If an issue
   is too big for a pull request of a few hundred lines, split it into smaller
   issues instead.
