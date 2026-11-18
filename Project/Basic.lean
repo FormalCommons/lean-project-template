@@ -29,6 +29,9 @@ theorem double_add (m n : ℕ) : double (m + n) = double m + double n := by
   unfold double
   ring
 
+/-- `double` of zero is zero. -/
+theorem double_zero : double 0 = 0 := rfl
+
 end Project
 
 end
