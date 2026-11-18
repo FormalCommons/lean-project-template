@@ -16,8 +16,10 @@ Mathlib:
   with `autoImplicit = false` besides.
 - **A library, not a list of proofs.** [AGENTS.md](AGENTS.md) asks for
   definitions with their API, results in their natural generality, public
-  supporting lemmas placed by topic, a `DESIGN.md` that every pull request
-  follows, and refactors in pull requests of their own. The plan's milestones
+  supporting lemmas placed by topic, a design that every pull request
+  follows (`DESIGN.md` and a file per part under `design/`, made and changed
+  through issues like any other work), and refactors in pull requests of
+  their own. The plan's milestones
   are theorems of the library.
 - **No root import file.** `lakefile.toml` builds every module under
   `Project/` through `globs`. When every pull request adds a line to one
